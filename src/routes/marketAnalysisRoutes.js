@@ -243,11 +243,11 @@ router.post('/generate/:campaignId', async (req, res) => {
         },
         channelPreferences: ['Facebook', 'Email', 'Pinterest', 'Search engines'],
         buyingPatterns: {
-          frequency: 'Monthly',
-          seasonality: ['Back to school', 'Holidays', 'Spring cleaning'],
-          decisionMakers: ['Primary parent', 'Both parents'],
-          purchaseInfluencers: ['Children', 'Friends', 'Online reviews'],
-          averageOrderValue: '$50-$200'
+          frequency: "Monthly",
+          seasonality: ["Back to school", "Holidays", "Spring cleaning"],
+          decisionMakers: ["Primary parent", "Both parents"],
+          purchaseInfluencers: ["Children", "Friends", "Online reviews"],
+          averageOrderValue: "$50-$200"
         },
       }
     ];
