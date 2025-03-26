@@ -4,15 +4,21 @@ This guide provides instructions for deploying the Arabotiq Marketing AI applica
 
 ## Recommended Hosting Options
 
-### Option 1: Low-Cost VPS (Recommended)
+### Option 1: UpCloud VPS (Recommended)
 
-**Estimated Cost**: $5-10/month
+**Estimated Cost**: $5-12/month
 
-**Providers**:
-- DigitalOcean (Basic Droplet - $5/month)
-- Linode (Nanode - $5/month)
-- Vultr (Cloud Compute - $5/month)
-- Hetzner (CX11 - €4.15/month)
+**Recommended Plan**:
+- 1 CPU Plan ($5/month)
+  - 1 CPU core
+  - 1 GB RAM
+  - 25 GB MaxIOPS Storage
+  - 1 TB Transfer
+- 2 CPU Plan ($10/month, if needed)
+  - 2 CPU cores
+  - 2 GB RAM
+  - 50 GB MaxIOPS Storage
+  - 2 TB Transfer
 
 **Specifications**:
 - 1 vCPU

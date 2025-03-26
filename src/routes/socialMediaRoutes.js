@@ -109,7 +109,7 @@ router.patch('/:id', auth, async (req, res) => {
 });
 
 // Delete a social media account
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const socialMedia = await SocialMedia.findById(req.params.id);
     
@@ -125,7 +125,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Schedule content for posting
-router.post('/:id/schedule', async (req, res) => {
+router.post('/:id/schedule', auth, async (req, res) => {
   try {
     const socialMedia = await SocialMedia.findById(req.params.id);
     
@@ -136,4 +136,27 @@ router.post('/:id/schedule', async (req, res) => {
     const contentId = req.body.contentId;
     const scheduledDate = req.body.scheduledDate;
     
-    if (!contentId || !schedule
+    if (!contentId || !scheduledDate) {
+      return res.status(400).json({ message: 'Content ID and scheduled date are required' });
+    }
+
+    const content = await Content.findById(contentId);
+    if (!content) {
+      return res.status(404).json({ message: 'Content not found' });
+    }
+
+    if (!socialMedia.scheduledContent) {
+      socialMedia.scheduledContent = [];
+    }
+
+    socialMedia.scheduledContent.push({
+      content: contentId,
+      scheduledDate: new Date(scheduledDate)
+    });
+
+    await socialMedia.save();
+    res.status(200).json(socialMedia);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});

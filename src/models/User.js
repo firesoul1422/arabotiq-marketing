@@ -51,6 +51,16 @@ const userSchema = new mongoose.Schema({
     accessToken: String,
     accessTokenSecret: String
   }],
+  analyticsCredentials: {
+    googleAnalytics: {
+      id: String,
+      active: {
+        type: Boolean,
+        default: false
+      },
+      lastVerified: Date
+    }
+  },
   subscription: {
     tier: {
       type: String,
@@ -64,14 +74,27 @@ const userSchema = new mongoose.Schema({
     endDate: Date,
     status: {
       type: String,
-      enum: ['active', 'expired', 'cancelled', 'trial'],
-      default: 'trial'
+      enum: ['pending', 'active', 'expired', 'rejected'],
+      default: 'pending'
     },
-    paymentInfo: {
-      lastPaymentDate: Date,
-      nextPaymentDate: Date,
-      paymentMethod: String,
-      paymentId: String
+    accessUrl: {
+      type: String,
+      unique: true
+    },
+    accessUrlExpiry: Date,
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    approvalDate: Date,
+    contactInfo: {
+      phone: String,
+      whatsapp: String,
+      preferredContact: {
+        type: String,
+        enum: ['phone', 'whatsapp', 'email'],
+        default: 'email'
+      }
     }
   },
   socialAccounts: {
@@ -119,6 +142,10 @@ const userSchema = new mongoose.Schema({
       required: true
     }
   }],
+  isOwner: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

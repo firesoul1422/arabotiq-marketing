@@ -12,18 +12,21 @@ router.get('/status', auth, async (req, res) => {
     const businessInfoComplete = !!user.company.description;
     const productsComplete = user.products.length > 0;
     const socialMediaComplete = user.socialMediaCredentials.length > 0;
+    const analyticsComplete = !!user.analyticsCredentials?.googleAnalytics?.id;
     
     // Calculate overall completion status
-    const isOnboardingComplete = businessInfoComplete && productsComplete && socialMediaComplete;
+    const isOnboardingComplete = businessInfoComplete && productsComplete && socialMediaComplete && analyticsComplete;
     
     res.json({
       businessInfoComplete,
       productsComplete,
       socialMediaComplete,
+      analyticsComplete,
       isOnboardingComplete,
       nextStep: !businessInfoComplete ? 'business-info' : 
                !productsComplete ? 'products' : 
-               !socialMediaComplete ? 'social-media' : 'complete'
+               !socialMediaComplete ? 'social-media' : 
+               !analyticsComplete ? 'analytics' : 'complete'
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -175,6 +178,40 @@ router.patch('/social-media/:index', auth, async (req, res) => {
     await user.save();
     
     res.json({ success: true, user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Add or update Google Analytics credentials
+router.post('/analytics', auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const { googleAnalyticsId } = req.body;
+    
+    // Update Google Analytics credentials
+    user.analyticsCredentials = {
+      googleAnalytics: {
+        id: googleAnalyticsId,
+        active: true,
+        lastVerified: new Date()
+      }
+    };
+    
+    await user.save();
+    
+    // Check if onboarding is complete
+    const isOnboardingComplete = user.company.description && 
+                               user.products.length > 0 && 
+                               user.socialMediaCredentials.length > 0 &&
+                               user.analyticsCredentials?.googleAnalytics?.id;
+    
+    res.json({ 
+      success: true, 
+      user, 
+      isOnboardingComplete,
+      nextStep: isOnboardingComplete ? 'complete' : 'social-media'
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

@@ -242,4 +242,17 @@ router.post('/generate/:campaignId', async (req, res) => {
           behaviors: ['Research-heavy', 'Recommendation-driven', 'Loyalty program participants']
         },
         channelPreferences: ['Facebook', 'Email', 'Pinterest', 'Search engines'],
-        buyingPatterns:
+        buyingPatterns: {
+          frequency: 'Monthly',
+          seasonality: ['Back to school', 'Holidays', 'Spring cleaning'],
+          decisionMakers: ['Primary parent', 'Both parents'],
+          purchaseInfluencers: ['Children', 'Friends', 'Online reviews'],
+          averageOrderValue: '$50-$200'
+        },
+      }
+    ];
+    res.json(marketAnalysis);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});

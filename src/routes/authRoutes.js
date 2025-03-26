@@ -131,29 +131,82 @@ router.patch('/profile', auth, async (req, res) => {
   }
 });
 
-// Update subscription
-router.patch('/subscription', auth, async (req, res) => {
+// Request subscription
+router.post('/subscription/request', auth, async (req, res) => {
   try {
-    const { tier, status, endDate, paymentInfo } = req.body;
+    const { tier, contactInfo } = req.body;
     
-    if (tier) {
-      req.user.subscription.tier = tier;
+    // Generate a unique access URL
+    const accessUrl = crypto.randomBytes(32).toString('hex');
+    const accessUrlExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    
+    req.user.subscription = {
+      tier,
+      status: 'pending',
+      startDate: new Date(),
+      accessUrl,
+      accessUrlExpiry,
+      contactInfo
+    };
+    
+    await req.user.save();
+    
+    res.json({
+      message: 'Subscription request submitted successfully',
+      accessUrl
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Owner: Approve subscription
+router.patch('/subscription/approve/:userId', auth, async (req, res) => {
+  try {
+    if (!req.user.isOwner) {
+      return res.status(403).json({ message: 'Only owner can approve subscriptions' });
     }
     
-    if (status) {
-      req.user.subscription.status = status;
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
     
-    if (endDate) {
-      req.user.subscription.endDate = new Date(endDate);
+    const { endDate } = req.body;
+    
+    user.subscription.status = 'active';
+    user.subscription.endDate = new Date(endDate);
+    user.subscription.approvedBy = req.user._id;
+    user.subscription.approvalDate = new Date();
+    
+    await user.save();
+    
+    res.json({ message: 'Subscription approved successfully' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Owner: Reject subscription
+router.patch('/subscription/reject/:userId', auth, async (req, res) => {
+  try {
+    if (!req.user.isOwner) {
+      return res.status(403).json({ message: 'Only owner can reject subscriptions' });
     }
     
-    if (paymentInfo) {
-      req.user.subscription.paymentInfo = {
-        ...req.user.subscription.paymentInfo,
-        ...paymentInfo
-      };
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+    
+    user.subscription.status = 'rejected';
+    await user.save();
+    
+    res.json({ message: 'Subscription rejected successfully' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+})
     
     await req.user.save();
     
