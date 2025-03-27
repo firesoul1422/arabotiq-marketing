@@ -41,6 +41,12 @@ app.use('/api/social-media', socialMediaRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/cultural-analytics', culturalAnalyticsRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
+
 // Root route
 app.get('/', (req, res) => {
   res.send('Agentic Marketing AI API is running');
