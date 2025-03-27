@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const auth = require('../middleware/auth');
 
 // Register a new user
@@ -206,7 +207,22 @@ router.patch('/subscription/reject/:userId', auth, async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
-})
+});
+
+// Update subscription
+router.patch('/subscription/update', auth, async (req, res) => {
+  try {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['tier', 'status', 'endDate'];
+    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+    
+    if (!isValidOperation) {
+      return res.status(400).json({ message: 'Invalid subscription updates' });
+    }
+    
+    updates.forEach(update => {
+      req.user.subscription[update] = req.body[update];
+    });
     
     await req.user.save();
     
