@@ -15,20 +15,26 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
     
-    // Create new user
+    // Create new user with validated data
     const user = new User({
       name: req.body.name,
-      email: req.body.email,
+      email: req.body.email.toLowerCase(),
       password: req.body.password,
-      company: req.body.company || {},
+      company: {
+        name: req.body.company?.name || '',
+        size: req.body.company?.size || '',
+        industry: req.body.company?.industry || '',
+        location: req.body.company?.location || '',
+        description: req.body.company?.description || ''
+      },
       language: req.body.language || 'ar',
       preferences: {
-        rtlLayout: req.body.preferences?.rtlLayout !== false, // Default to true
-        emailNotifications: req.body.preferences?.emailNotifications !== false, // Default to true
+        rtlLayout: req.body.preferences?.rtlLayout !== false,
+        emailNotifications: req.body.preferences?.emailNotifications !== false,
         dialect: req.body.preferences?.dialect || 'msa'
       },
-      products: req.body.products || [],
-      socialMediaCredentials: req.body.socialMediaCredentials || []
+      products: Array.isArray(req.body.products) ? req.body.products : [],
+      socialMediaCredentials: Array.isArray(req.body.socialMediaCredentials) ? req.body.socialMediaCredentials : []
     });
     
     await user.save();
@@ -106,11 +112,25 @@ router.patch('/profile', auth, async (req, res) => {
   try {
     updates.forEach(update => {
       if (update === 'preferences') {
-        // Merge preferences instead of replacing
-        req.user.preferences = { ...req.user.preferences, ...req.body.preferences };
+        // Validate and merge preferences
+        const newPreferences = req.body.preferences || {};
+        req.user.preferences = {
+          rtlLayout: newPreferences.rtlLayout !== undefined ? newPreferences.rtlLayout : req.user.preferences.rtlLayout,
+          emailNotifications: newPreferences.emailNotifications !== undefined ? newPreferences.emailNotifications : req.user.preferences.emailNotifications,
+          dialect: newPreferences.dialect || req.user.preferences.dialect
+        };
       } else if (update === 'company') {
-        // Merge company info instead of replacing
-        req.user.company = { ...req.user.company, ...req.body.company };
+        // Validate and merge company info
+        const newCompany = req.body.company || {};
+        req.user.company = {
+          name: newCompany.name || req.user.company.name || '',
+          size: newCompany.size || req.user.company.size || '',
+          industry: newCompany.industry || req.user.company.industry || '',
+          location: newCompany.location || req.user.company.location || '',
+          description: newCompany.description || req.user.company.description || ''
+        };
+      } else if (update === 'password') {
+        req.user.password = req.body.password;
       } else {
         req.user[update] = req.body[update];
       }

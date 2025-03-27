@@ -28,13 +28,14 @@ const auth = async (req, res, next) => {
     const hasActiveSubscription = user.hasActiveSubscription();
     
     // Allow access to auth and onboarding routes even with inactive subscription
-    const isAuthRoute = req.path.startsWith('/api/auth/');
-    const isOnboardingRoute = req.path.startsWith('/api/onboarding/');
+    const isAuthRoute = req.originalUrl.startsWith('/api/auth/');
+    const isOnboardingRoute = req.originalUrl.startsWith('/api/onboarding/');
     
     if (!hasActiveSubscription && !isAuthRoute && !isOnboardingRoute) {
       return res.status(402).json({ 
         message: 'Subscription expired', 
-        redirectUrl: '/renew-subscription'
+        redirectUrl: '/subscription/request',
+        subscriptionStatus: user.subscription.status
       });
     }
     
