@@ -234,3 +234,23 @@ router.get('/content/performance', async (req, res) => {
         avgCTR,
         avgConversionRate
       },
+      byType: performanceByType,
+      byChannel: performanceByChannel,
+      content: content.map(c => ({
+        id: c._id,
+        title: c.title,
+        type: c.type,
+        channel: c.channel,
+        campaign: c.campaign?.name,
+        publishedDate: c.publishedDate,
+        performance: c.performance || {}
+      }))
+    };
+    
+    res.json(analyticsData);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+module.exports = router;
